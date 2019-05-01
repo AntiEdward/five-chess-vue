@@ -2,8 +2,8 @@
     <div class="container">
         
         <canvas id="canvas" class="square" width="530" height="530"></canvas>
-        <div>
-            <div @click="init()">重新开始</div>
+        <div class="sidebar">
+            <el-button @click="init()">重新开始</el-button>
         </div>
     </div>
    
@@ -19,7 +19,11 @@ export default {
         return{
             canvasDom: null,
             squareResult: [],
-            winsResult: [],
+            winsResult: {
+                horizontalResult: [],   //横线
+                verticalResult: [],     //竖线
+
+            },
 
             player: true    //true为黑子，false为白子
         }
@@ -28,10 +32,12 @@ export default {
         const _this = this
         //绘制棋盘
         this.canvasDom = document.getElementById('canvas')
-        this.drawSquare()
+        
         this.canvasDom.onclick = function(e){
             _this.drawStep(e)
         }
+
+        this.drawSquare()
         //生成空白落子数组
         this.getSquareResult()
         //生成获胜数组
@@ -40,9 +46,18 @@ export default {
     methods: {
         //初始化
         init(){
+            // window.location.reload()
+            let ctx = this.canvasDom.getContext("2d");
+
+            //清空画布
+            ctx.clearRect(0, 0, 530, 530);
+            //清空数组
             this.squareResult = []
-            this.getSquareResult()
+            //初始化棋手
             this.player = true
+            this.drawSquare()
+            this.getSquareResult()
+
         },
         //画棋盘
         drawSquare(){
@@ -72,10 +87,10 @@ export default {
         drawCell(){
             let ctx = this.canvasDom.getContext("2d");
             ctx.beginPath()
-            //棋盘是14x14
+            //棋盘是15x15点阵，14x14网格
 
             //竖线
-            for(let i = 0; i < 14; i++){
+            for(let i = 0; i < 15; i++){
                 ctx.moveTo(20 + i * 35, 20);
                 ctx.lineTo(20 + i * 35, 510);
                 // ctx.strokeStyle = '#f8f8f8'
@@ -83,7 +98,7 @@ export default {
             }
 
             //横线
-            for(let i = 0; i < 14; i++){
+            for(let i = 0; i < 15; i++){
                 ctx.moveTo(20, 20 + i * 35);
                 ctx.lineTo(510, 20 + i * 35);
                 // ctx.strokeStyle = '#f8f8f8'
@@ -103,15 +118,14 @@ export default {
             if(this.squareResult[x][y]){
                 return
             }else{
-                this.squareResult[x][y] = '1'
+                this.squareResult[x][y] = this.player ? 1 : -1
             }
             
             //转换为像素坐标
             x = x * 35  + 20
             y = y * 35  + 20
-            console.log(x, y)
-
-            
+            // console.log(x, y)
+           
             let ctx = this.canvasDom.getContext("2d");
             ctx.beginPath();
             let grd = ctx.createRadialGradient(x, y, 14, x, y, 0);
@@ -128,14 +142,15 @@ export default {
             // ctx.fillStyle = this.player ? 'black' : 'grey';
             ctx.fill();
             this.player = !this.player
+            this.checkWins()
         },
         //生成空白落子数组
         getSquareResult(){
             const _this = this
             // 14 x 14
-            for(let i = 0; i < 14; i++){
+            for(let i = 0; i < 15; i++){
                 let item = []
-                for(let j = 0; j < 14; j++){
+                for(let j = 0; j < 15; j++){
                     item.push(null)
                 }
                 _this.squareResult.push(item)
@@ -144,10 +159,81 @@ export default {
         //生成获胜数组
         getWinsResult(){
             let _this = this
-            
-            // for(){
 
-            // }
+            //横线
+            for(let i = 0; i < 15; i++){
+                let item = []
+                for(let j = 0; j < 11; j++){
+                    let item_sub = []
+                    for(let k = 0; k < 5; k++){
+                        let arr = [i, j + k]
+                        item_sub.push(arr)
+                    }
+                    item.push(item_sub)
+                }
+                _this.winsResult.verticalResult.push(item)
+            }
+            //竖线
+            for(let i = 0; i < 15; i++){
+                let item = []
+                for(let j = 0; j < 11; j++){
+                    let item_sub = []
+                    for(let k = 0; k < 5; k++){
+                        let arr = [j + k, i]
+                        item_sub.push(arr)
+                    }
+                    item.push(item_sub)
+                }
+                _this.winsResult.horizontalResult.push(item)
+            }
+            //正斜线
+            
+            //反斜线
+
+            
+            
+        },
+        //校验胜利
+        checkWins(){
+            let current = this.squareResult
+            // check(this.winsResult.verticalResult)
+            check(this.winsResult.horizontalResult)
+            function check(arr){
+                let wins = arr
+                // console.log(wins)
+                for(let i in wins){
+                    let item = wins[i]
+                    for(let j in item){
+                        let item_sub = item[j]
+                        // console.log(item_sub)
+                        let check = []
+                        for(let k in item_sub){
+                            // console.log(item_sub[k])
+                            let x = item_sub[k][0]
+                            let y = item_sub[k][1]
+                            check.push(current[x][y])
+                        }
+                        // console.log(check)
+                        if(add(check) === 5){
+                            //5个1
+                            console.log('黑棋')
+                            return
+                        }else if(add(check) === -5){
+                            //5个-1
+                            console.log('白棋')
+                            return
+                        }
+                    }
+                }
+            }
+            
+            function add(arr){
+                let result = 0
+                for(let item of arr){
+                    result += item
+                }
+                return result
+            }
         }
     }
 }
@@ -159,5 +245,8 @@ export default {
         /* width: 500px;
         height: 500px; */
         border: 1px solid #ddd;
+    }
+    .sidebar{
+        margin-top: 20px;
     }
 </style>
