@@ -22,7 +22,8 @@ export default {
             winsResult: {
                 horizontalResult: [],   //横线
                 verticalResult: [],     //竖线
-
+                positiveSlashResult:[], //正斜线
+                backSlashResult: []     //反斜线
             },
 
             player: true    //true为黑子，false为白子
@@ -166,6 +167,19 @@ export default {
                 for(let j = 0; j < 11; j++){
                     let item_sub = []
                     for(let k = 0; k < 5; k++){
+                        let arr = [j + k, i]
+                        item_sub.push(arr)
+                    }
+                    item.push(item_sub)
+                }
+                _this.winsResult.horizontalResult.push(item)
+            }
+            //竖线
+            for(let i = 0; i < 15; i++){
+                let item = []
+                for(let j = 0; j < 11; j++){
+                    let item_sub = []
+                    for(let k = 0; k < 5; k++){
                         let arr = [i, j + k]
                         item_sub.push(arr)
                     }
@@ -173,7 +187,20 @@ export default {
                 }
                 _this.winsResult.verticalResult.push(item)
             }
-            //竖线
+            //正斜线
+            for(let i = 0; i < 15; i++){
+                let item = []
+                for(let j = 0; j < 11; j++){
+                    let item_sub = []
+                    for(let k = 0; k < 5; k++){
+                        let arr = [j + k, i + k]
+                        item_sub.push(arr)
+                    }
+                    item.push(item_sub)
+                }
+                _this.winsResult.positiveSlashResult.push(item)
+            }
+            //反斜线
             for(let i = 0; i < 15; i++){
                 let item = []
                 for(let j = 0; j < 11; j++){
@@ -184,12 +211,8 @@ export default {
                     }
                     item.push(item_sub)
                 }
-                _this.winsResult.horizontalResult.push(item)
+                _this.winsResult.backSlashResult.push(item)
             }
-            //正斜线
-            
-            //反斜线
-
             
             
         },
@@ -197,7 +220,9 @@ export default {
         checkWins(){
             let current = this.squareResult
             // check(this.winsResult.verticalResult)
-            check(this.winsResult.horizontalResult)
+            // check(this.winsResult.horizontalResult)
+            check(this.winsResult.positiveSlashResult)
+            
             function check(arr){
                 let wins = arr
                 // console.log(wins)
