@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        
+        <div>{{ msg }}</div>
         <canvas id="canvas" class="square" width="530" height="530"></canvas>
         <div class="sidebar">
             <el-button @click="init()">重新开始</el-button>
@@ -12,11 +12,9 @@
 <script>
 export default {
     name: 'HelloWorld',
-    props: {
-        msg: String
-    },
     data(){
         return{
+            msg: '',
             canvasDom: null,
             squareResult: [],
             winsResult: {
@@ -26,7 +24,8 @@ export default {
                 backSlashResult: []     //反斜线
             },
 
-            player: true    //true为黑子，false为白子
+            player: true,    //true为黑子，false为白子
+            isOverFlag: false    //比赛是否结束
         }
     },
     mounted(){
@@ -43,13 +42,14 @@ export default {
         this.getSquareResult()
         //生成获胜数组
         this.getWinsResult()
+
+        this.msg = '比赛开始'
     },
     methods: {
         //初始化
         init(){
             // window.location.reload()
             let ctx = this.canvasDom.getContext("2d");
-
             //清空画布
             ctx.clearRect(0, 0, 530, 530);
             //清空数组
@@ -58,7 +58,7 @@ export default {
             this.player = true
             this.drawSquare()
             this.getSquareResult()
-
+            this.msg = '比赛开始'
         },
         //画棋盘
         drawSquare(){
@@ -109,14 +109,17 @@ export default {
         //落子
         drawStep(e){
             // console.log(e)
-
             //定位坐标位于那个格子
             let x = (e.offsetX - 20) / 35
             let y = (e.offsetY - 20) / 35
             
             x = Math.round(x)
             y = Math.round(y)
-            if(this.squareResult[x][y]){
+            if(this.isOverFlag){
+                //如果比赛已经结束
+                return
+            }else if(this.squareResult[x][y]){
+                //如果该点已经落子了
                 return
             }else{
                 this.squareResult[x][y] = this.player ? 1 : -1
@@ -143,6 +146,7 @@ export default {
             // ctx.fillStyle = this.player ? 'black' : 'grey';
             ctx.fill();
             this.player = !this.player
+            this.msg = '将' + (this.player ? '黑棋' : '白棋') + '落子'
             this.checkWins()
         },
         //生成空白落子数组
@@ -201,12 +205,12 @@ export default {
                 _this.winsResult.positiveSlashResult.push(item)
             }
             //反斜线
-            for(let i = 0; i < 15; i++){
+            for(let i = 0; i < 11; i++){
                 let item = []
-                for(let j = 0; j < 11; j++){
+                for(let j = 4; j < 15; j++){
                     let item_sub = []
                     for(let k = 0; k < 5; k++){
-                        let arr = [j + k, i]
+                        let arr = [i + k, j - k]
                         item_sub.push(arr)
                     }
                     item.push(item_sub)
@@ -218,10 +222,12 @@ export default {
         },
         //校验胜利
         checkWins(){
+            let _this = this
             let current = this.squareResult
-            // check(this.winsResult.verticalResult)
-            // check(this.winsResult.horizontalResult)
+            check(this.winsResult.verticalResult)
+            check(this.winsResult.horizontalResult)
             check(this.winsResult.positiveSlashResult)
+            check(this.winsResult.backSlashResult)
             
             function check(arr){
                 let wins = arr
@@ -241,11 +247,15 @@ export default {
                         // console.log(check)
                         if(add(check) === 5){
                             //5个1
-                            console.log('黑棋')
+                            // console.log('黑棋')
+                            _this.msg = '黑棋胜利'
+                            _this.isOverFlag = true
                             return
                         }else if(add(check) === -5){
                             //5个-1
-                            console.log('白棋')
+                            // console.log('白棋')
+                            _this.msg = '白棋胜利'
+                            _this.isOverFlag = true
                             return
                         }
                     }
@@ -267,8 +277,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
     .square{
-        /* width: 500px;
-        height: 500px; */
         border: 1px solid #ddd;
     }
     .sidebar{
